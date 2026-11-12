@@ -8,34 +8,37 @@ async function fetchCatBreeds() {
     return data;
 }
 
-function getSelectElement() {
-    const selectElement = document.getElementById('factCount');
-    return selectElement;
-}
-
 function getSelectedValue() {
-    const selectElement = getSelectElement();
+    const selectElement = document.getElementById('factCount');
     const selectedValue = selectElement.value;
     return selectedValue;
 }
 
 async function displayCatFacts() {
-    const selectElement = getSelectElement();
-    const optionCount = selectElement.length;
-
-    const response = await fetch(`https://catfact.ninja/facts?limit=${optionCount}`);
-    if (!response.ok) {
-        throw new Error(`HTTP Error! status: ${response.status}`);
-    }
     const factCount = getSelectedValue();
-    const data = await response.json();
-    result = data.data[factCount-1].fact;
-    console.log(factCount)
-    console.log(result);
-
     const factsContainer = document.getElementById('factsContainer');
-    factsContainer.textContent = result;
-    return data;
+
+    try {
+        const response = await fetch(`https://catfact.ninja/facts?limit=${factCount}`);
+        if (!response.ok) {
+            throw new Error(`HTTP Error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log(factCount);
+        console.log(data);
+
+        factsContainer.innerHTML = '';
+        data.data.forEach(({ fact }) => {
+            const p = document.createElement('p');
+            p.textContent = fact;
+            factsContainer.appendChild(p);
+        });
+
+        return data;
+    } catch (error) {
+        console.error('Error fetching cat facts:', error);
+        factsContainer.textContent = 'Failed to load cat facts.';
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
